@@ -5,7 +5,7 @@ import sys
 def main():
   pygame.init()
   screen = pygame.display.set_mode((400, 300))
-  pygame.display.set_caption("Flappy-AI")
+  pygame.display.set_caption("Rappy-AI")
 
   while True:
     screen.fill((0, 0, 0)) # 画面を黒色(#000)に塗りつぶし
