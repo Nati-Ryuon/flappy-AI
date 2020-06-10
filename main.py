@@ -3,13 +3,18 @@ from pygame.locals import *
 
 from wall import Wall
 
-def load_img(img_dict:dict, filepath:str, name:str):
-  """ 画像を辞書に登録する用の関数
+def load_img(img_dict:dict, file_path:str, name:str):
+  """ 画像を辞書に登録する用のメソッド
+    とりあえず登録名がダブったら表示するだけにしてます
+  Args:
+    img_dict dict: 画像を登録する辞書
+    file_path str: 読み込む画像の相対パス
+    name str: 登録する辞書のkey
   """
   if name in img_dict:
     print('the key is already exist')
   else:
-    img_dict[name] = pygame.image.load(filepath).convert_alpha()
+    img_dict[name] = pygame.image.load(file_path).convert_alpha()
 
 def main():
   pygame.init()
