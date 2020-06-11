@@ -7,7 +7,9 @@ def main():
   screen = pygame.display.set_mode((400, 300))
   pygame.display.set_caption("Rappy-AI")
 
+  clock = pygame.time.Clock()
   while True:
+    clock.tick(60) # FPSを60に固定
     screen.fill((0, 0, 0)) # 画面を黒色(#000)に塗りつぶし
     pygame.display.update()
 
