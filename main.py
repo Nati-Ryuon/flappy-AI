@@ -1,7 +1,12 @@
+# -*- coding: utf-8 -*-
 import pygame
 from pygame.locals import *
+import os
 
 from wall import Wall
+from player import Player
+
+SCR_RECT = Rect(0,0,800,600) #ウィンドウサイズ取得用なんかに使えるRECT
 
 def load_img(img_dict:dict, file_path:str, name:str):
   """ 画像を辞書に登録する用のメソッド
@@ -18,29 +23,28 @@ def load_img(img_dict:dict, file_path:str, name:str):
 
 def main():
   pygame.init()
-  screen = pygame.display.set_mode((400, 300))
+  # screen = pygame.display.set_mode((400, 300))
+  screen = pygame.display.set_mode((SCR_RECT.width, SCR_RECT.height))
   pygame.display.set_caption("Rappy-AI")
 
-<<<<<<< HEAD
-  clock = pygame.time.Clock()
-  while True:
-    clock.tick(60) # FPSを60に固定
-=======
   img_dict = {} # 画像は辞書型で登録
 
   load_img(img_dict, "./img/test.jpg", "wall") # wallで画像を登録
+  load_img(img_dict, os.path.join("img","rappy.png"), "bird") # birdで画像を登録
 
   wall = Wall(img_dict["wall"], 200, 0, 1)
+  rappy = Player(img_dict["bird"], SCR_RECT.width / 4, SCR_RECT.height / 2, 0)
 
   clock = pygame.time.Clock()
 
   while True:
     clock.tick(60) # 60fps
->>>>>>> f0b04520c7b845d5875f98490eb9578fcfb6f00d
-    screen.fill((0, 0, 0)) # 画面を黒色(#000)に塗りつぶし
+    screen.fill((250, 130, 80)) # 画面を黒色(#000)に塗りつぶし ⇒　夕焼けに変更
 
     wall.update()
+    rappy.update()
     wall.draw(screen) # 描画は画面の情報を渡してやる必要がある
+    rappy.draw(screen)
 
     pygame.display.update()
 

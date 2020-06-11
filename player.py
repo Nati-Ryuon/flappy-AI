@@ -1,39 +1,101 @@
 import pygame
 from pygame.locals import *
 
-class Player:
-    pos = {'x':0,'y':0}
-    speed = {'x':0,'y':0}
+SCR_RECT = Rect(0,0,800,600) #ウィンドウサイズ取得用なんかに使えるRECT
 
-    def __init__(self):
-        self.pos['x'] = 50
-        self.pos['y'] = 150
-        self.speed['x'] = 0
-        self.speed['y'] = 2
+class Player(pygame.sprite.Sprite):
+
+    GRAVITY = 0.5
+    JUMP_SPEED = 1
+
+    def __init__(self, image:pygame.Surface, x:float=0, y:float=0, speed:float=0):
+
+        pygame.sprite.Sprite.__init__(self)
+        self.__image = image
+        self.__image_dead = self.__image.copy() #imageをコピーし、死んでいるラッピーを作成する
+        self.__image_dead.fill((80, 160, 160, 0), special_flags = pygame.BLEND_RGBA_SUB) #この部で唐揚げに加工
+        self.rect = self.__image.get_rect()
+        self.__width = self.rect.width
+        self.__height = self.rect.height
+        self.__default_pos = (x, y) # 初期地点を記憶させ、restart時に正確に戻ってこれるようにしている
+        self.rect.center = self.__default_pos
+        self.__speed = speed
+        
+        self.__exist = True
+        self.__alive = True
+        self.__stop = True
+
+        self.__sysfont = pygame.font.SysFont(None, 60)
     
     def is_jump(self):
-        if self.speed['y'] > 0:
+        if self.__speed > 0:
             return True
         else:
             return False
     
     def is_dead(self):
-        if self.speed['x'] == 0 and self.speed['y'] == 0:
+        if self.__alive == False:
             return True
         else:
             return False
 
-    def update(self):
-        key = pygame.key.get_pressed()
-        if not self.is_dead():
-            self.pos['x'] += self.speed['x']
-            self.pos['y'] += self.speed['y']
-            
-            if key[K_SPACE] == False:
-                self.speed['y'] += 2
-            else:
-                self.speed['y'] -= 5
+    def is_stop(self):
+        return self.__stop
+
+    def do_jump(self):
+        if self.__speed > 0:
+            self.__speed = 0
+        self.__speed -= Player.JUMP_SPEED # ジャンプ実行時、徐々に加速
+
+    def restart(self):
+        self.rect.center = self.__default_pos
+        self.__speed = 0
+        self.__exist = True
+        self.__alive = True
+        self.do_resume()
     
-    def draw(self, surface):
-        pygame.draw.circle(surface, Color(255,255,50,0), (self.pos['x'], self.pos['y']), 10)
+    def do_stop(self):
+        self.__stop = True
+
+    def do_resume(self):
+        self.__stop = False
+
+    def update(self):
+        pressed_key = pygame.key.get_pressed() # 押されているキーを取得
+
+        if self.is_dead() == False and self.is_stop() == False: # 死んでも止まってもいなければ実行
+            
+            self.__speed += Player.GRAVITY # __speedにGRAVITY定数を加算(徐々に落下速度が上昇)
+
+            if pressed_key[K_SPACE] == True:
+                self.do_jump() # SPACEが押されていればジャンプを実行                
+
+            self.rect.move_ip(0, self.__speed) # y座標を__speed分移動
+
+            # 頭が天井にぶつかったらスピードを0にする
+            if self.rect.top < SCR_RECT.top:
+                self.rect.top = SCR_RECT.top
+                self.__speed = 0
+            
+            # 足が床に触れたら死亡判定
+            if self.rect.bottom >= SCR_RECT.bottom:
+                self.rect.bottom = SCR_RECT.bottom
+                self.__alive = False
+        else:
+            if pressed_key[K_SPACE] == True:
+                self.restart()
+
+    def draw(self, screen:pygame.Surface):
+        if self.__exist == True:
+            if self.is_dead() == True:
+                screen.blit(self.__image_dead, self.rect)
+                # screen.blit(self.__image, self.rect, special_flags=pygame.BLEND_RGBA_ADD
+
+                # ↓ゲームオーバー時メッセージ。メッセージを削除、移行する場合はこの部分をコメントアウトしてください。
+                msg = self.__sysfont.render("Press SPACE to restart.", True, (255, 255, 255)) # リスタートメッセージを書いた画像を生成
+                screen.blit(msg, ((SCR_RECT.width - msg.get_width())//2, (SCR_RECT.height - msg.get_height())//2)) # 画面中央にリスタートの案内を表示
+
+            else:
+                screen.blit(self.__image, self.rect)
+        
     
