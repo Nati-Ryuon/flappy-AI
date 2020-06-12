@@ -93,9 +93,9 @@ class Player(pygame.sprite.Sprite):
 
             self.rect.move_ip(0, self.__speed) # y座標を__speed分移動
 
-            # 頭が天井にぶつかったらスピードを0にする
-            #if self.rect.top < SCR_RECT.top:
-                #self.rect.top = SCR_RECT.top
+            # 足が天井を超えそうなら止める
+            if self.rect.bottom < SCR_RECT.top:
+                self.rect.bottom = SCR_RECT.top
                 #self.__speed = 0
                 # 本家は天井がなかった
             
@@ -106,7 +106,8 @@ class Player(pygame.sprite.Sprite):
         else:
             for e in event:
                 if e.type == KEYDOWN and e.key == K_SPACE:
-                    self.restart()
+                    #self.restart()
+                    self.do_resume()
 
     def draw(self, screen:pygame.Surface):
         if self.__exist == True:

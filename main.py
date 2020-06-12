@@ -12,6 +12,7 @@ WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 600
 SCR_RECT = Rect(0,0,WINDOW_WIDTH,WINDOW_HEIGHT) #ウィンドウサイズ取得用なんかに使えるRECT
 
+
 def load_img(img_dict:dict, file_path:str, name:str):
   """ 画像を辞書に登録する用のメソッド
     とりあえず登録名がダブったら表示するだけにしてます
@@ -36,9 +37,13 @@ def wall_manager(count:int, walls:list, image:pygame.Surface):
     x = wall.rect.left
     w = wall.rect.width
     if x < - w:
+      remove_wall_obj(walls[i]) # 画面外へ消えた壁をwall_groupから除外
       walls.pop(i)
-    
 
+def restart(player:Player, walls:list):
+  player.restart()
+  walls.clear()
+  collision.clear_wall_obj()
 
 def main():
   pygame.init()
@@ -72,14 +77,21 @@ def main():
 
     event = pygame.event.get() # 一度pygame.event.get()を行うと中身が消えてしまうため、eventに格納してplayerへ渡している
 
-    wall_manager(count, walls, img_dict["wall"])
-    rappy.update(event)
-    for wall in walls:
-      wall.update()
-      if not wall.has_passed() and wall.rect.right <= rappy.rect.left:
-        wall.pass_through()
-        score += 1
-    collision.detection_collide(rappy)
+    if rappy.is_dead() == False:
+      wall_manager(count, walls, img_dict["wall"])
+      rappy.update(event)
+      for wall in walls:
+        wall.update()
+        if not wall.has_passed() and wall.rect.right <= rappy.rect.left:
+          wall.pass_through()
+          score += 1
+      collision.detection_collide(rappy)
+    else:
+      for e in event:
+        if e.type == KEYDOWN and e.key == K_SPACE:
+          restart(rappy, walls)
+          score = 0
+          count = 0
 
     rappy.draw(screen)
     for wall in walls:
@@ -93,6 +105,8 @@ def main():
       if e.type == QUIT or (e.type == KEYDOWN and e.key == K_ESCAPE):
         pygame.quit()
         exit_flag = True
+
+      
 
 if __name__ == "__main__":
   main()
