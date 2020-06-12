@@ -16,7 +16,7 @@ class Player(pygame.sprite.Sprite):
         self.__image_dead = self.__image.copy() #imageをコピーし、死んでいるラッピーを作成する
         self.__image_dead.fill((80, 160, 160, 0), special_flags = pygame.BLEND_RGBA_SUB) #この部で唐揚げに加工
         self.__image_fallen = pygame.transform.rotate(self.__image, -120) #落ちているラッピーを作成する
-        self.__image_fallen_dead = self.__image_fallen.copy() #imageをコピーし、死んでいるラッピーを作成する
+        self.__image_fallen_dead = self.__image_fallen.copy() #imageをコピーし、落ちている死んでいるラッピーを作成する
         self.__image_fallen_dead.fill((80, 160, 160, 0), special_flags = pygame.BLEND_RGBA_SUB) #この部で唐揚げに加工       
         self.rect = self.__image.get_rect()
         self.__width = self.rect.width
@@ -37,6 +37,11 @@ class Player(pygame.sprite.Sprite):
             return True
         else:
             return False
+
+    def do_jump(self):
+        if self.__speed > 0:
+            self.__speed = 0
+        self.__speed = -Player.JUMP_SPEED # ジャンプ実行時、徐々に加速
     
     def is_dead(self):
         if self.__alive == False:
@@ -44,16 +49,23 @@ class Player(pygame.sprite.Sprite):
         else:
             return False
 
+    def kill(self):
+        self.__alive = False
+
     def is_stop(self):
         return self.__stop
+    
+    def do_stop(self):
+        self.__stop = True
+
+    def do_resume(self):
+        self.__stop = False
 
     def is_fallen(self):
         return self.__fallen
 
-    def do_jump(self):
-        if self.__speed > 0:
-            self.__speed = 0
-        self.__speed = -Player.JUMP_SPEED # ジャンプ実行時、徐々に加速
+    def get_pos(self):
+        return self.rect.center # (x, y)でrectの中央座標を返す
 
     def restart(self):
         self.rect.center = self.__default_pos
@@ -62,12 +74,6 @@ class Player(pygame.sprite.Sprite):
         self.__alive = True
         self.__fallen = False
         self.do_resume()
-    
-    def do_stop(self):
-        self.__stop = True
-
-    def do_resume(self):
-        self.__stop = False
 
     def update(self, event):
         # pressed_key = pygame.key.get_pressed() # 押されているキーを取得
@@ -120,5 +126,3 @@ class Player(pygame.sprite.Sprite):
                     screen.blit(self.__image, self.rect)
                 else:
                     screen.blit(self.__image_fallen, self.rect)
-        
-    

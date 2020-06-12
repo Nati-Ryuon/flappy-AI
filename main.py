@@ -3,6 +3,7 @@ import pygame
 from pygame.locals import *
 import os
 
+import collision
 from wall import Wall
 from player import Player
 
@@ -37,7 +38,7 @@ def main():
 
   clock = pygame.time.Clock()
 
-  exit_flag = False
+  exit_flag = False # pygame.quit()後に再度ループに入らないようフラグを用意
 
   # while True:
   while not exit_flag:
@@ -45,10 +46,11 @@ def main():
     clock.tick(60) # 60fps
     screen.fill((250, 130, 80)) # 画面を黒色(#000)に塗りつぶし ⇒　夕焼けに変更
 
-    event = pygame.event.get()
+    event = pygame.event.get() # 一度pygame.event.get()を行うと中身が消えてしまうため、eventに格納してplayerへ渡している
 
     wall.update()
     rappy.update(event)
+    collision.detection_collide(rappy)
     wall.draw(screen) # 描画は画面の情報を渡してやる必要がある
     rappy.draw(screen)
 
