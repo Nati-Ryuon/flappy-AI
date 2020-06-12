@@ -1,5 +1,6 @@
 import pygame
 from pygame.locals import *
+import collision
 
 class Wall(pygame.sprite.Sprite):
   """ 障害物用のクラス"""
@@ -20,6 +21,8 @@ class Wall(pygame.sprite.Sprite):
     self.rect = Rect(x, y, self.__width, self.__height)
     self.__speed = speed
     self.__has_passed = False
+
+    collision.add_wall_obj(self)
 
   def update(self):
     """ 更新用メソッド

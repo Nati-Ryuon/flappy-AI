@@ -4,6 +4,7 @@ from pygame.locals import *
 import os
 import random
 
+import collision
 from wall import Wall
 from player import Player
 
@@ -55,7 +56,7 @@ def main():
 
   clock = pygame.time.Clock()
 
-  exit_flag = False
+  exit_flag = False # pygame.quit()後に再度ループに入らないようフラグを用意
 
   walls = []
   count = 0 # ループの
@@ -69,7 +70,7 @@ def main():
     clock.tick(60) # 60fps
     screen.fill((250, 130, 80)) # 画面を黒色(#000)に塗りつぶし ⇒　夕焼けに変更
 
-    event = pygame.event.get()
+    event = pygame.event.get() # 一度pygame.event.get()を行うと中身が消えてしまうため、eventに格納してplayerへ渡している
 
     wall_manager(count, walls, img_dict["wall"])
     rappy.update(event)
@@ -78,6 +79,7 @@ def main():
       if not wall.has_passed() and wall.rect.right <= rappy.rect.left:
         wall.pass_through()
         score += 1
+    collision.detection_collide(rappy)
 
     rappy.draw(screen)
     for wall in walls:
