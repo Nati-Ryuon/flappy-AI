@@ -22,6 +22,9 @@ def remove_wall_obj(wall_sprite):
     else:
         print("存在しないwallを削除しようとしています。")
 
+def clear_wall_obj():
+    wall_group.empty()
+
 def detection_collide(player):
     # if pygame.sprite.spritecollideany(player, wall_group) == True:
     hit_group = pygame.sprite.spritecollide(player, wall_group, False)
