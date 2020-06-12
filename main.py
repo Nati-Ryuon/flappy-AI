@@ -74,11 +74,12 @@ def main():
 
     wall_manager(count, walls, img_dict["wall"])
     rappy.update(event)
-    for wall in walls:
-      wall.update()
-      if not wall.has_passed() and wall.rect.right <= rappy.rect.left:
-        wall.pass_through()
-        score += 1
+    if not rappy.is_dead():
+      for wall in walls:
+        wall.update()
+        if not wall.has_passed() and wall.rect.right <= rappy.rect.left:
+          wall.pass_through()
+          score += 1
     collision.detection_collide(rappy)
 
     rappy.draw(screen)
