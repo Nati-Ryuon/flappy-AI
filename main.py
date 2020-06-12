@@ -2,11 +2,14 @@
 import pygame
 from pygame.locals import *
 import os
+import random
 
 from wall import Wall
 from player import Player
 
-SCR_RECT = Rect(0,0,800,600) #ウィンドウサイズ取得用なんかに使えるRECT
+WINDOW_WIDTH = 800
+WINDOW_HEIGHT = 600
+SCR_RECT = Rect(0,0,WINDOW_WIDTH,WINDOW_HEIGHT) #ウィンドウサイズ取得用なんかに使えるRECT
 
 def load_img(img_dict:dict, file_path:str, name:str):
   """ 画像を辞書に登録する用のメソッド
@@ -21,6 +24,21 @@ def load_img(img_dict:dict, file_path:str, name:str):
   else:
     img_dict[name] = pygame.image.load(file_path).convert_alpha()
 
+WALL_INTERVAL = 300
+GAP = 200
+def wall_manager(count:int, walls:list, image:pygame.Surface):
+  if count % WALL_INTERVAL == 0:
+    rand_y = random.uniform(0, image.get_rect().height * 2 + GAP - WINDOW_HEIGHT) # 高さをランダムに
+    walls.append(Wall(image, WINDOW_WIDTH, 0 - rand_y))
+    walls.append(Wall(image, WINDOW_WIDTH, image.get_rect().height + GAP - rand_y))
+  for i, wall in enumerate(walls):
+    x = wall.rect.left
+    w = wall.rect.width
+    if x < - w:
+      walls.pop(i)
+    
+
+
 def main():
   pygame.init()
   # screen = pygame.display.set_mode((400, 300))
@@ -29,28 +47,43 @@ def main():
 
   img_dict = {} # 画像は辞書型で登録
 
-  load_img(img_dict, "./img/test.jpg", "wall") # wallで画像を登録
+  load_img(img_dict, os.path.join("img", "wall.png"), "wall") # wallで画像を登録
   load_img(img_dict, os.path.join("img","rappy.png"), "bird") # birdで画像を登録
 
-  wall = Wall(img_dict["wall"], 200, 0, 1)
+  # wall = Wall(img_dict["wall"], 200, 0, 1)
   rappy = Player(img_dict["bird"], SCR_RECT.width / 2, SCR_RECT.height / 2, 0)
 
   clock = pygame.time.Clock()
 
   exit_flag = False
 
+  walls = []
+  count = 0 # ループの
+
+  font = pygame.font.Font(None, 48)
+  score = 0
+
   # while True:
   while not exit_flag:
-
+    count += 1
     clock.tick(60) # 60fps
     screen.fill((250, 130, 80)) # 画面を黒色(#000)に塗りつぶし ⇒　夕焼けに変更
 
     event = pygame.event.get()
 
-    wall.update()
+    wall_manager(count, walls, img_dict["wall"])
     rappy.update(event)
-    wall.draw(screen) # 描画は画面の情報を渡してやる必要がある
+    for wall in walls:
+      wall.update()
+      if not wall.has_passed() and wall.rect.right <= rappy.rect.left:
+        wall.pass_through()
+        score += 1
+
     rappy.draw(screen)
+    for wall in walls:
+      wall.draw(screen) # 描画は画面の情報を渡してやる必要がある
+
+    screen.blit(font.render(str(int(score/2)), True, (0, 0, 0)), [0, 0])
 
     pygame.display.update()
 

@@ -4,7 +4,7 @@ from pygame.locals import *
 class Wall(pygame.sprite.Sprite):
   """ 障害物用のクラス"""
 
-  def __init__(self, image:pygame.Surface, x:float=0, y:float=0, speed:float=0):
+  def __init__(self, image:pygame.Surface, x:float=0, y:float=0, speed:float=1):
     """コンストラクタ
 
     Args:
@@ -19,6 +19,7 @@ class Wall(pygame.sprite.Sprite):
     self.__height = image.get_height()
     self.rect = Rect(x, y, self.__width, self.__height)
     self.__speed = speed
+    self.__has_passed = False
 
   def update(self):
     """ 更新用メソッド
@@ -33,14 +34,28 @@ class Wall(pygame.sprite.Sprite):
   def draw(self, screen:pygame.Surface):
     screen.blit(self.__image, self.rect)
 
+  def has_passed(self):
+    return self.__has_passed
 
-  def get_pos(self) -> tuple:
+  def pass_through(self):
+    self.__has_passed = True
+
+  def get_x(self):
     """ 座標取得用メソッド
-      ・障害物の座標をタプルで返す
-
-    Args: void
-
-    Returns:
-      tuple: (x座標, y座標)
     """
-    return (self.__x, self.__y)
+    return self.rect.x
+
+  def get_y(self):
+    """ 座標取得用メソッド
+    """
+    return self.rect.y
+  
+  def get_width(self):
+    """ 座標取得用メソッド
+    """
+    return self.rect.width
+
+  def get_height(self):
+    """ 座標取得用メソッド
+    """
+    return self.rect.height
