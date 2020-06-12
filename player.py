@@ -6,7 +6,8 @@ SCR_RECT = Rect(0,0,800,600) #ウィンドウサイズ取得用なんかに使�
 class Player(pygame.sprite.Sprite):
 
     GRAVITY = 0.5
-    JUMP_SPEED = 1
+    SPEED_MAX = 9
+    JUMP_SPEED = 10
 
     def __init__(self, image:pygame.Surface, x:float=0, y:float=0, speed:float=0):
 
@@ -14,6 +15,9 @@ class Player(pygame.sprite.Sprite):
         self.__image = image
         self.__image_dead = self.__image.copy() #imageをコピーし、死んでいるラッピーを作成する
         self.__image_dead.fill((80, 160, 160, 0), special_flags = pygame.BLEND_RGBA_SUB) #この部で唐揚げに加工
+        self.__image_fallen = pygame.transform.rotate(self.__image, -120) #落ちているラッピーを作成する
+        self.__image_fallen_dead = self.__image_fallen.copy() #imageをコピーし、死んでいるラッピーを作成する
+        self.__image_fallen_dead.fill((80, 160, 160, 0), special_flags = pygame.BLEND_RGBA_SUB) #この部で唐揚げに加工       
         self.rect = self.__image.get_rect()
         self.__width = self.rect.width
         self.__height = self.rect.height
@@ -24,6 +28,7 @@ class Player(pygame.sprite.Sprite):
         self.__exist = True
         self.__alive = True
         self.__stop = True
+        self.__fallen = False
 
         self.__sysfont = pygame.font.SysFont(None, 60)
     
@@ -42,16 +47,20 @@ class Player(pygame.sprite.Sprite):
     def is_stop(self):
         return self.__stop
 
+    def is_fallen(self):
+        return self.__fallen
+
     def do_jump(self):
         if self.__speed > 0:
             self.__speed = 0
-        self.__speed -= Player.JUMP_SPEED # ジャンプ実行時、徐々に加速
+        self.__speed = -Player.JUMP_SPEED # ジャンプ実行時、徐々に加速
 
     def restart(self):
         self.rect.center = self.__default_pos
         self.__speed = 0
         self.__exist = True
         self.__alive = True
+        self.__fallen = False
         self.do_resume()
     
     def do_stop(self):
@@ -60,35 +69,46 @@ class Player(pygame.sprite.Sprite):
     def do_resume(self):
         self.__stop = False
 
-    def update(self):
-        pressed_key = pygame.key.get_pressed() # 押されているキーを取得
+    def update(self, event):
+        # pressed_key = pygame.key.get_pressed() # 押されているキーを取得
 
         if self.is_dead() == False and self.is_stop() == False: # 死んでも止まってもいなければ実行
             
-            self.__speed += Player.GRAVITY # __speedにGRAVITY定数を加算(徐々に落下速度が上昇)
+            if self.__speed < Player.SPEED_MAX:
+                self.__speed += Player.GRAVITY # __speedにGRAVITY定数を加算(徐々に落下速度が上昇)
+                self.__fallen = False
+            else:
+                self.__fallen = True
 
-            if pressed_key[K_SPACE] == True:
-                self.do_jump() # SPACEが押されていればジャンプを実行                
+            for e in event:
+                # if event.type == KEYDOWN and pressed_key[K_SPACE] == True:
+                if e.type == KEYDOWN and e.key == K_SPACE:
+                    self.do_jump() # SPACEが押されていればジャンプを実行
 
             self.rect.move_ip(0, self.__speed) # y座標を__speed分移動
 
             # 頭が天井にぶつかったらスピードを0にする
-            if self.rect.top < SCR_RECT.top:
-                self.rect.top = SCR_RECT.top
-                self.__speed = 0
+            #if self.rect.top < SCR_RECT.top:
+                #self.rect.top = SCR_RECT.top
+                #self.__speed = 0
+                # 本家は天井がなかった
             
             # 足が床に触れたら死亡判定
             if self.rect.bottom >= SCR_RECT.bottom:
                 self.rect.bottom = SCR_RECT.bottom
                 self.__alive = False
         else:
-            if pressed_key[K_SPACE] == True:
-                self.restart()
+            for e in event:
+                if e.type == KEYDOWN and e.key == K_SPACE:
+                    self.restart()
 
     def draw(self, screen:pygame.Surface):
         if self.__exist == True:
             if self.is_dead() == True:
-                screen.blit(self.__image_dead, self.rect)
+                if self.is_fallen() == False:
+                    screen.blit(self.__image_dead, self.rect)
+                else:
+                    screen.blit(self.__image_fallen_dead, self.rect)
                 # screen.blit(self.__image, self.rect, special_flags=pygame.BLEND_RGBA_ADD
 
                 # ↓ゲームオーバー時メッセージ。メッセージを削除、移行する場合はこの部分をコメントアウトしてください。
@@ -96,6 +116,9 @@ class Player(pygame.sprite.Sprite):
                 screen.blit(msg, ((SCR_RECT.width - msg.get_width())//2, (SCR_RECT.height - msg.get_height())//2)) # 画面中央にリスタートの案内を表示
 
             else:
-                screen.blit(self.__image, self.rect)
+                if self.is_fallen() == False:
+                    screen.blit(self.__image, self.rect)
+                else:
+                    screen.blit(self.__image_fallen, self.rect)
         
     

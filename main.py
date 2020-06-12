@@ -33,24 +33,31 @@ def main():
   load_img(img_dict, os.path.join("img","rappy.png"), "bird") # birdで画像を登録
 
   wall = Wall(img_dict["wall"], 200, 0, 1)
-  rappy = Player(img_dict["bird"], SCR_RECT.width / 4, SCR_RECT.height / 2, 0)
+  rappy = Player(img_dict["bird"], SCR_RECT.width / 2, SCR_RECT.height / 2, 0)
 
   clock = pygame.time.Clock()
 
-  while True:
+  exit_flag = False
+
+  # while True:
+  while not exit_flag:
+
     clock.tick(60) # 60fps
     screen.fill((250, 130, 80)) # 画面を黒色(#000)に塗りつぶし ⇒　夕焼けに変更
 
+    event = pygame.event.get()
+
     wall.update()
-    rappy.update()
+    rappy.update(event)
     wall.draw(screen) # 描画は画面の情報を渡してやる必要がある
     rappy.draw(screen)
 
     pygame.display.update()
 
-    for event in pygame.event.get():
-      if event.type == QUIT:
+    for e in event:
+      if e.type == QUIT or (e.type == KEYDOWN and e.key == K_ESCAPE):
         pygame.quit()
+        exit_flag = True
 
 if __name__ == "__main__":
   main()
