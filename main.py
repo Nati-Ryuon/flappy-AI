@@ -25,7 +25,7 @@ def load_img(img_dict:dict, file_path:str, name:str):
   else:
     img_dict[name] = pygame.image.load(file_path).convert_alpha()
 
-WALL_INTERVAL = 300
+WALL_INTERVAL = 240
 GAP = 200
 def wall_manager(count:int, walls:list, image:pygame.Surface):
   if count % WALL_INTERVAL == 0:
