@@ -18,10 +18,22 @@ class RappyBird(base.PyGameWapper):
 
   def init(self):
     # ゲームの再スタートに必要な初期化
-    pass
+    self.distance_to_target = float("inf")
+    self.score = 0
 
   def getGameState(self):
     state = {
-      
+      "distance_to_target": self.distance_to_target
     }
     return state
+
+  def getScore(self):
+    return self.score
+
+  def game_over(self):
+    pass # ラッピーの生存情報を返す(死んだ時True)
+
+  def step(self, dt):
+    # dtは1フレームにかかる時間
+    # メインループ
+    pass
