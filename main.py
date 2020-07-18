@@ -43,7 +43,8 @@ def main():
   # while True:
   while not game_scene.get_exit_flag():
     clock.tick(60) # 60fps
-    game_scene.step(screen=screen)
+    game_scene.step()
+    game_scene.render(screen)
 
       
 
