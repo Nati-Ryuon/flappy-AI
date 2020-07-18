@@ -36,8 +36,8 @@ class GameScene():
       if e.type == QUIT or (e.type == KEYDOWN and e.key == K_ESCAPE):
         self.exit()
 
-    if self.exit_flag == True:
-        pygame.quit()
+    #if self.exit_flag == True:
+    #    pygame.quit()
 
   def render(self, screen:pygame.Surface):
     self._draw_all(screen)
@@ -107,12 +107,16 @@ class GameScene():
     i = 0
     index = -1
 
+    if len(self.walls) == 0:
+      return (self.SCR_RECT.width / 2, 0)
+
     for w in self.walls:
       if w.rect.centerx > self.rappy.rect.centerx:
         if posx > w.rect.centerx:
           posx = w.rect.centerx
           index = i
       i = i + 1
+
 
     if self.walls[index].rect.top < self.SCR_RECT.top:
         gap_pos = (self.walls[index].rect.centerx, self.walls[index].rect.top - GAP / 2)

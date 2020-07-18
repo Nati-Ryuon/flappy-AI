@@ -5,6 +5,9 @@ import gym
 from gym import spaces
 from gym.utils import seeding
 import numpy as np
+import pygame
+from pygame.locals import *
+import os
 
 from game_scene import GameScene
 
@@ -37,8 +40,8 @@ class RappyEnv(gym.Env):
 
     def __init__(self):
         pygame.init()
-        # screen = pygame.display.set_mode((SCR_RECT.width, SCR_RECT.height))
-        # pygame.display.set_caption("Rappy-AI")
+        self.screen = pygame.display.set_mode((SCR_RECT.width, SCR_RECT.height))
+        pygame.display.set_caption("Rappy-AI")
         
         self.font = pygame.font.Font(None, 48)
         self.clock = pygame.time.Clock()
@@ -47,17 +50,17 @@ class RappyEnv(gym.Env):
         load_img(self.img_dict, os.path.join("img", "wall.png"), "wall") # wallで画像を登録
         load_img(self.img_dict, os.path.join("img","rappy.png"), "bird") # birdで画像を登録
 
-        self.game_scene = GameScene(img_dict=img_dict, font=font, SCR_RECT=SCR_RECT) 
+        self.game_scene = GameScene(img_dict=self.img_dict, font=self.font, SCR_RECT=SCR_RECT) 
         self.score = 0
 
         # 行動空間の定義(0, 1)
         self.action_space = spaces.Discrete(2)
 
         # 状態空間の最大と最小を定義
-        low = [0,-WINDOW_HEIGHT]
-        high = [WINDOW_WIDTH, WINDOW_HEIGHT]
+        low = np.array([0, -WINDOW_HEIGHT])
+        high = np.array([WINDOW_WIDTH, WINDOW_HEIGHT])
 
-        self.observation_space = spaces.Box(low, high)
+        self.observation_space = spaces.Box(low=low, high=high)
 
         self._seed()
         self.screen = None
@@ -89,7 +92,7 @@ class RappyEnv(gym.Env):
 
     def _reset(self):
         # とりあえず画面右端の真ん中に隙間がある状態を初期状態とする
-        self.state = np.array(SCR_RECT.width / 2, SCR_RECT.height / 2)
+        self.state = np.array([SCR_RECT.width / 2, 0])
 
         self.steps_beyond_done = None
 
