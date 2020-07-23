@@ -13,7 +13,6 @@ class GameScene():
   def __init__(self, img_dict:dict, font, SCR_RECT):
     self.SCR_RECT = SCR_RECT
     self.img_dict = img_dict
-    self.exit_flag = False # pygame.quit()後に再度ループに入らないようフラグを用意
     self.rappy = Player(self.img_dict["bird"], SCR_RECT.width / 2, SCR_RECT.height / 2, 0)
 
     self.font = font
@@ -24,13 +23,14 @@ class GameScene():
     self.count = 0 # ループの
     self.score = 0
     self.rappy.restart()
+    self.exit_flag = False # pygame.quit()後に再度ループに入らないようフラグを用意
     collision.clear_wall_obj()
 
-  def step(self):
+  def step(self, action):
     self.count += 1
     event = pygame.event.get() # 一度pygame.event.get()を行うと中身が消えてしまうため、eventに格納してplayerへ渡している
 
-    self._update_all(event=event)
+    self._update_all(event=event, action=action)
     
     for e in event:
       if e.type == QUIT or (e.type == KEYDOWN and e.key == K_ESCAPE):
@@ -42,9 +42,9 @@ class GameScene():
   def render(self, screen:pygame.Surface):
     self._draw_all(screen)
 
-  def _update_all(self, event):
+  def _update_all(self, event, action):
     if self.rappy.is_dead() == False:
-      self.rappy.update(event)
+      self.rappy.update(event, action=action)
 
       self._wall_manager()
       self._update_walls()
@@ -123,7 +123,7 @@ class GameScene():
     else:
         gap_pos = (self.walls[index].rect.centerx, self.walls[index].rect.bottom + GAP / 2)
 
-    return (gap_pos[0] - self.rappy.get_pos()[0], gap_pos[1], self.rappy.get_pos()[1])
+    return (gap_pos[0] - self.rappy.get_pos()[0], gap_pos[1] - self.rappy.get_pos()[1])
     
   def exit(self):
     self.exit_flag = True

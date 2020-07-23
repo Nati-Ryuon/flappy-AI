@@ -5,6 +5,7 @@ import chainer
 import chainerrl
 import gym
 import myenv
+import time
 
 # Q値を近似するニューラルネットを定義
 class QFunction(chainer.Chain):
@@ -61,18 +62,22 @@ def main():
     t = 0 # 経過ステップ数(フレーム数)
 
     render_flag = False
-    if i % 10 == 0: # 何エピソードかごとに描画させる
+    if i % 100 == 0: # 何エピソードかごとに描画させる
       render_flag = True
 
     while not done: #and t < max_episode_len: # ゲームが終わるまで
       if render_flag:
         env._render()
+      start = time.time()
       action = agent.act_and_train(obs, reward) # 状態と報酬をもとに行動を学習、決定
+      elapsed_time = time.time() - start
+      print ("elapsed_time:{0}".format(elapsed_time) + "[sec]" + "\n")
       obs, reward, done, _ = env._step(action) # 行動の結果を取得
       R += reward
       t += 1
 
     agent.stop_episode_and_train(obs, reward, done)
+    print(str(t) + "\n")
 
 
 if __name__ == "__main__":

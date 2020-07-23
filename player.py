@@ -75,7 +75,7 @@ class Player(pygame.sprite.Sprite):
         self.__fallen = False
         self.do_resume()
 
-    def update(self, event):
+    def update(self, event, action):
         # pressed_key = pygame.key.get_pressed() # 押されているキーを取得
 
         if self.is_dead() == False and self.is_stop() == False: # 死んでも止まってもいなければ実行
@@ -86,10 +86,13 @@ class Player(pygame.sprite.Sprite):
             else:
                 self.__fallen = True
 
-            for e in event:
-                # if event.type == KEYDOWN and pressed_key[K_SPACE] == True:
-                if e.type == KEYDOWN and e.key == K_SPACE:
-                    self.do_jump() # SPACEが押されていればジャンプを実行
+            if action == 1:
+                self.do_jump()
+
+            # for e in event:
+            #     # if event.type == KEYDOWN and pressed_key[K_SPACE] == True:
+            #     if e.type == KEYDOWN and e.key == K_SPACE:
+            #         self.do_jump() # SPACEが押されていればジャンプを実行
 
             self.rect.move_ip(0, self.__speed) # y座標を__speed分移動
 

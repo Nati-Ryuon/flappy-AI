@@ -73,7 +73,7 @@ class RappyEnv(gym.Env):
     def _step(self, action):
         assert self.action_space.contains(action), "%r (%s) invalid" %(action, type(action))
 
-        self.game_scene.step()
+        self.game_scene.step(action)
 
         self.state = self.game_scene.get_nearest_gap_distance()
 
@@ -92,6 +92,7 @@ class RappyEnv(gym.Env):
 
     def _reset(self):
         # とりあえず画面右端の真ん中に隙間がある状態を初期状態とする
+        self.game_scene.init()
         self.state = np.array([SCR_RECT.width / 2, 0])
 
         self.steps_beyond_done = None
