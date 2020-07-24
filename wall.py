@@ -5,7 +5,7 @@ import collision
 class Wall(pygame.sprite.Sprite):
   """ 障害物用のクラス"""
 
-  def __init__(self, image:pygame.Surface, x:float=0, y:float=0, speed:float=2):
+  def __init__(self, image:pygame.Surface, x:float=0, y:float=0, speed:float=3.2):
     """コンストラクタ
 
     Args:

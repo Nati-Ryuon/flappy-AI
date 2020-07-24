@@ -29,6 +29,7 @@ class Player(pygame.sprite.Sprite):
         self.__alive = True
         self.__stop = True
         self.__fallen = False
+        self.__on_top = False
 
         self.__sysfont = pygame.font.SysFont(None, 60)
     
@@ -63,6 +64,9 @@ class Player(pygame.sprite.Sprite):
 
     def is_fallen(self):
         return self.__fallen
+
+    def is_on_top(self):
+        return self.__on_top
 
     def get_pos(self):
         return self.rect.center # (x, y)でrectの中央座標を返す
@@ -99,8 +103,11 @@ class Player(pygame.sprite.Sprite):
             # 足が天井を超えそうなら止める
             if self.rect.bottom < SCR_RECT.top:
                 self.rect.bottom = SCR_RECT.top
+                self.__on_top = True
                 #self.__speed = 0
                 # 本家は天井がなかった
+            else:
+                self.__on_top = False
             
             # 足が床に触れたら死亡判定
             if self.rect.bottom >= SCR_RECT.bottom:

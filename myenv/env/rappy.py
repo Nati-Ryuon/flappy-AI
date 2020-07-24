@@ -73,19 +73,33 @@ class RappyEnv(gym.Env):
     def _step(self, action):
         assert self.action_space.contains(action), "%r (%s) invalid" %(action, type(action))
 
+        # 無条件報酬(生存時間あたりの報酬)
+        reward = 30.0
+
         self.game_scene.step(action)
 
         self.state = self.game_scene.get_nearest_gap_distance()
 
+        # ジャンプした場合にマイナスの報酬(ジャンプしすぎるので)
+        if action == 1:
+            reward += -50.0
+
+        # 天井に接着しているときマイナスの報酬
+        if self.game_scene.is_rappy_on_top():
+            reward += -5.0
+
+        # スコアを獲得したときの報酬
         if self.score < self.game_scene.get_score():
-            reward = 1.0
+            reward += 10000.0
             self.score = self.game_scene.get_score()
         else:
-            reward = 0.0
+            reward += 0.0
         
         done = self.game_scene.is_rappy_dead()
 
         if done:
+            # 死んだときマイナスの報酬
+            reward += -2000.0
             self.game_scene.exit()
 
         return np.array(self.state), reward, done, {}

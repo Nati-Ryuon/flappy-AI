@@ -7,7 +7,7 @@ from wall import Wall
 from player import Player
 
 WALL_INTERVAL = 240
-GAP = 200
+GAP = 250
 
 class GameScene():
   def __init__(self, img_dict:dict, font, SCR_RECT):
@@ -80,7 +80,7 @@ class GameScene():
 
   def _wall_manager(self):
     image = self.img_dict["wall"]
-    if self.count % WALL_INTERVAL == 0:
+    if self.count % WALL_INTERVAL == 1:
       rand_y = random.uniform(0, image.get_rect().height * 2 + GAP - self.SCR_RECT.height) # 高さをランダムに
       self.walls.append(Wall(image, self.SCR_RECT.width, 0 - rand_y))
       self.walls.append(Wall(image, self.SCR_RECT.width, image.get_rect().height + GAP - rand_y))
@@ -97,6 +97,9 @@ class GameScene():
   def is_rappy_dead(self):
     return self.rappy.is_dead()
 
+  def is_rappy_on_top(self):
+    return self.rappy.is_on_top()
+
   def get_score(self):
     return self.score
 
@@ -107,23 +110,41 @@ class GameScene():
     i = 0
     index = -1
 
+    # x方向の距離は0～400+α、y方向の距離は-600～600
+
+    # 座標1つ1つだと状態の数が増えすぎるため、x方向を(div_x)段階、y方向を(div_y)段階に分けて記録させる
+    div_x = 10
+    div_y = 10
+
+    # 段階を出すため、1段階あたりの距離を算出
+    div_xe = self.SCR_RECT.width / 2 / div_x
+    div_ye = self.SCR_RECT.height * 2 / div_y
+
     if len(self.walls) == 0:
-      return (self.SCR_RECT.width / 2, 0)
+      reletive_x = self.SCR_RECT.width - self.rappy.get_pos()[0]
+      reletive_y = self.SCR_RECT.height / 2 - self.rappy.get_pos()[1]
+      return (int(reletive_x / div_xe), int(reletive_y / div_ye))
 
     for w in self.walls:
       if w.rect.centerx > self.rappy.rect.centerx:
-        if posx > w.rect.centerx:
+        if posx > w.rect.left:
           posx = w.rect.centerx
           index = i
       i = i + 1
 
 
-    if self.walls[index].rect.top < self.SCR_RECT.top:
-        gap_pos = (self.walls[index].rect.centerx, self.walls[index].rect.top - GAP / 2)
+    # 上か下か判別する。
+    if self.walls[index].rect.top > self.SCR_RECT.top:
+      # wall.rectの上端がスクリーンの上端より下に位置する場合、wall.rect.topの座標に隙間の半分を引いた値をy座標として返す
+      gap_pos = (self.walls[index].rect.centerx, self.walls[index].rect.top - GAP / 2)
     else:
-        gap_pos = (self.walls[index].rect.centerx, self.walls[index].rect.bottom + GAP / 2)
+      # wall.rectの上端がスクリーンの上端より上に位置する場合、wall.rect.bottomの座標に隙間の半分を足した値をy座標として返す
+      gap_pos = (self.walls[index].rect.centerx, self.walls[index].rect.bottom + GAP / 2)
 
-    return (gap_pos[0] - self.rappy.get_pos()[0], gap_pos[1] - self.rappy.get_pos()[1])
+    reletive_x = gap_pos[0] - self.rappy.get_pos()[0]
+    reletive_y = gap_pos[1] - self.rappy.get_pos()[1]
+
+    return (int(reletive_x / div_xe), int(reletive_y / div_ye))
     
   def exit(self):
     self.exit_flag = True

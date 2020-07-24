@@ -29,7 +29,8 @@ def main():
   env = gym.make("Rappy-v0")
   obs_size = env.observation_space.shape[0] # プレイヤーと壁の中心との相対ベクトル(x, y)
   n_actions = env.action_space.n # jumpするかしないか
-  n_nodes = 256 # 中間層のノード数
+  # n_nodes = 256 # 中間層のノード数
+  n_nodes = 128 # 中間層のノード数
   q_func = QFunction(obs_size, n_actions, n_nodes) # Q関数のインスタンスを生成
 
   # パラメータの更新アルゴリズムの設定
@@ -49,7 +50,8 @@ def main():
   # replay_start_size 再生バッファのサイズがこれより小さい場合更新をスキップする。この値になるごとに更新を行う
   # update_interval 更新を行う頻度?
   # target_update_interval 更新をネットワークと同期する頻度?
-  agent = chainerrl.agents.DQN(q_func, optimizer, replay_buffer, gamma, explorer, replay_start_size=1000, minibatch_size=32, update_interval=1, target_update_interval=1000, phi=phi)
+  agent = chainerrl.agents.DQN(q_func, optimizer, replay_buffer, gamma, explorer, replay_start_size=1000, minibatch_size=32, update_interval=1, target_update_interval=10, phi=phi)
+  # agent.load("agent_20200723")
 
   n_episodes = 20000 # 学習ゲーム回数
 
@@ -62,22 +64,26 @@ def main():
     t = 0 # 経過ステップ数(フレーム数)
 
     render_flag = False
-    if i % 100 == 0: # 何エピソードかごとに描画させる
+    if i % 10 == 0: # 何エピソードかごとに描画させる
       render_flag = True
 
     while not done: #and t < max_episode_len: # ゲームが終わるまで
       if render_flag:
         env._render()
-      start = time.time()
+      # start = time.time()
       action = agent.act_and_train(obs, reward) # 状態と報酬をもとに行動を学習、決定
-      elapsed_time = time.time() - start
-      print ("elapsed_time:{0}".format(elapsed_time) + "[sec]" + "\n")
+      # elapsed_time = time.time() - start
+      # print ("elapsed_time:{0}".format(elapsed_time) + "[sec]" + "\n")
       obs, reward, done, _ = env._step(action) # 行動の結果を取得
       R += reward
       t += 1
 
+      # print("state:", obs)
+
     agent.stop_episode_and_train(obs, reward, done)
-    print(str(t) + "\n")
+    print("episode:" + str(i) + " time:" + str(t) + " reward:" + str(R))
+  
+  agent.save("agent_20200723")
 
 
 if __name__ == "__main__":
