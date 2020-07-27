@@ -6,7 +6,8 @@ SCR_RECT = Rect(0,0,800,600) #ウィンドウサイズ取得用なんかに使�
 class Player(pygame.sprite.Sprite):
 
     GRAVITY = 0.5
-    SPEED_MAX = 9
+    # SPEED_MAX = 9 JUMP_SPEED側と同値に設定。そこまで影響はないかと
+    SPEED_MAX = 10
     JUMP_SPEED = 10
 
     def __init__(self, image:pygame.Surface, x:float=0, y:float=0, speed:float=0):
@@ -71,6 +72,9 @@ class Player(pygame.sprite.Sprite):
     def get_pos(self):
         return self.rect.center # (x, y)でrectの中央座標を返す
 
+    def get_speed(self):
+        return self.__speed
+
     def restart(self):
         self.rect.center = self.__default_pos
         self.__speed = 0
@@ -101,8 +105,8 @@ class Player(pygame.sprite.Sprite):
             self.rect.move_ip(0, self.__speed) # y座標を__speed分移動
 
             # 足が天井を超えそうなら止める
-            if self.rect.bottom < SCR_RECT.top:
-                self.rect.bottom = SCR_RECT.top
+            if self.rect.centery < SCR_RECT.top:
+                self.rect.centery = SCR_RECT.top
                 self.__on_top = True
                 #self.__speed = 0
                 # 本家は天井がなかった

@@ -83,7 +83,7 @@ def main():
     agent.stop_episode_and_train(obs, reward, done)
     print("episode:" + str(i) + " time:" + str(t) + " reward:" + str(R))
   
-  agent.save("agent_20200723")
+  agent.save("agent_20200726")
 
 
 if __name__ == "__main__":

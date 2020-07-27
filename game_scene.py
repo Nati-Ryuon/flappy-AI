@@ -6,10 +6,17 @@ import collision
 from wall import Wall
 from player import Player
 
-WALL_INTERVAL = 240
-GAP = 250
 
 class GameScene():
+  
+  # WALL_INTERBAL：壁の出現する間隔(フレーム単位)
+  WALL_INTERVAL = 240
+
+  # GAP：壁の隙間のサイズ
+  GAP = 250
+
+  PLAYER_SPEED_MAX = Player.SPEED_MAX
+
   def __init__(self, img_dict:dict, font, SCR_RECT):
     self.SCR_RECT = SCR_RECT
     self.img_dict = img_dict
@@ -25,6 +32,8 @@ class GameScene():
     self.rappy.restart()
     self.exit_flag = False # pygame.quit()後に再度ループに入らないようフラグを用意
     collision.clear_wall_obj()
+
+    random.seed(1) # seed値を固定し、毎回同じステージにする。デバッグ以外では封印推奨。
 
   def step(self, action):
     self.count += 1
@@ -80,10 +89,10 @@ class GameScene():
 
   def _wall_manager(self):
     image = self.img_dict["wall"]
-    if self.count % WALL_INTERVAL == 1:
-      rand_y = random.uniform(0, image.get_rect().height * 2 + GAP - self.SCR_RECT.height) # 高さをランダムに
+    if self.count % GameScene.WALL_INTERVAL == 1:
+      rand_y = random.uniform(0, image.get_rect().height * 2 + GameScene.GAP - self.SCR_RECT.height) # 高さをランダムに
       self.walls.append(Wall(image, self.SCR_RECT.width, 0 - rand_y))
-      self.walls.append(Wall(image, self.SCR_RECT.width, image.get_rect().height + GAP - rand_y))
+      self.walls.append(Wall(image, self.SCR_RECT.width, image.get_rect().height + GameScene.GAP - rand_y))
     for i, wall in enumerate(self.walls):
       x = wall.rect.left
       w = wall.rect.width
@@ -100,6 +109,12 @@ class GameScene():
   def is_rappy_on_top(self):
     return self.rappy.is_on_top()
 
+  def get_rappy_pos(self):
+    return self.rappy.get_pos()
+
+  def get_rappy_speed(self):
+    return self.rappy.get_speed()
+
   def get_score(self):
     return self.score
 
@@ -112,23 +127,24 @@ class GameScene():
 
     # x方向の距離は0～400+α、y方向の距離は-600～600
 
-    # 座標1つ1つだと状態の数が増えすぎるため、x方向を(div_x)段階、y方向を(div_y)段階に分けて記録させる
-    div_x = 10
-    div_y = 10
+    # 座標1つ1つだと状態の数が増えすぎるため、x方向を(div_x)段階、y方向を(div_y)段階に分けて記録させる→GameSceneの定数欄へ移動
+    div_x = 20
+    div_y = 20
 
     # 段階を出すため、1段階あたりの距離を算出
     div_xe = self.SCR_RECT.width / 2 / div_x
     div_ye = self.SCR_RECT.height * 2 / div_y
 
     if len(self.walls) == 0:
-      reletive_x = self.SCR_RECT.width - self.rappy.get_pos()[0]
-      reletive_y = self.SCR_RECT.height / 2 - self.rappy.get_pos()[1]
+      relative_x = self.SCR_RECT.width - self.rappy.get_pos()[0]
+      relative_y = self.SCR_RECT.height / 2 - self.rappy.get_pos()[1]
       return (int(reletive_x / div_xe), int(reletive_y / div_ye))
 
+    # 最も近い壁を検索するループ。壁の右端がラッピーの左端よりも右側にある場合に記録する
     for w in self.walls:
-      if w.rect.centerx > self.rappy.rect.centerx:
+      if w.rect.right > self.rappy.rect.left:
         if posx > w.rect.left:
-          posx = w.rect.centerx
+          posx = w.rect.left
           index = i
       i = i + 1
 
@@ -136,15 +152,47 @@ class GameScene():
     # 上か下か判別する。
     if self.walls[index].rect.top > self.SCR_RECT.top:
       # wall.rectの上端がスクリーンの上端より下に位置する場合、wall.rect.topの座標に隙間の半分を引いた値をy座標として返す
-      gap_pos = (self.walls[index].rect.centerx, self.walls[index].rect.top - GAP / 2)
+      gap_pos = (self.walls[index].rect.centerx, self.walls[index].rect.top - GameScene.GAP / 2)
     else:
       # wall.rectの上端がスクリーンの上端より上に位置する場合、wall.rect.bottomの座標に隙間の半分を足した値をy座標として返す
-      gap_pos = (self.walls[index].rect.centerx, self.walls[index].rect.bottom + GAP / 2)
+      gap_pos = (self.walls[index].rect.centerx, self.walls[index].rect.bottom + GameScene.GAP / 2)
 
     reletive_x = gap_pos[0] - self.rappy.get_pos()[0]
     reletive_y = gap_pos[1] - self.rappy.get_pos()[1]
 
     return (int(reletive_x / div_xe), int(reletive_y / div_ye))
+
+
+  # ↑の関数の絶対座標版
+  def get_nearest_gap_pos(self):
+    posx = self.SCR_RECT.width
+    i = 0
+    index = -1
+
+    if len(self.walls) == 0:
+      gap_x = self.SCR_RECT.width
+      gap_y = self.SCR_RECT.height / 2
+      return (gap_x, gap_y)
+
+    # 最も近い壁を検索するループ。壁の右端がラッピーの左端よりも右側にある場合に記録する
+    for w in self.walls:
+      if w.rect.right > self.rappy.rect.left:
+        if posx > w.rect.left:
+          posx = w.rect.left
+          index = i
+      i = i + 1
+
+
+    # 上か下か判別する。
+    if self.walls[index].rect.top > self.SCR_RECT.top:
+      # wall.rectの上端がスクリーンの上端より下に位置する場合、wall.rect.topの座標に隙間の半分を引いた値をy座標として返す
+      gap_pos = (self.walls[index].rect.centerx, self.walls[index].rect.top - GameScene.GAP / 2)
+    else:
+      # wall.rectの上端がスクリーンの上端より上に位置する場合、wall.rect.bottomの座標に隙間の半分を足した値をy座標として返す
+      gap_pos = (self.walls[index].rect.centerx, self.walls[index].rect.bottom + GameScene.GAP / 2)
+
+    return (gap_pos[0], gap_pos[1])
     
+
   def exit(self):
     self.exit_flag = True
