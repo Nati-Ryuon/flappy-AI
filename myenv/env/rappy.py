@@ -18,8 +18,8 @@ WINDOW_HEIGHT = 600
 SCR_RECT = Rect(0,0,WINDOW_WIDTH,WINDOW_HEIGHT) #ウィンドウサイズ取得用なんかに使えるRECT
 
 # 受け取った座標を簡易化するための数字。各向きを(DIVIDE_NUM_○)段階に分割する。
-DIVIDE_NUM_X = 20
-DIVIDE_NUM_Y = 20
+DIVIDE_NUM_X = 30
+DIVIDE_NUM_Y = 30
 
 
 def load_img(img_dict:dict, file_path:str, name:str):
@@ -98,8 +98,7 @@ class RappyEnv(gym.Env):
     def _step(self, action):
         assert self.action_space.contains(action), "%r (%s) invalid" %(action, type(action))
 
-        # 無条件報酬(生存時間あたりの報酬)
-        reward = 0.0 # y座標に比例して増やす報酬を下に追加したため一旦0に変更
+        
 
         self.game_scene.step(action)
 
@@ -110,26 +109,7 @@ class RappyEnv(gym.Env):
                       simplify_pos(self.game_scene.get_nearest_gap_pos()[0], SCR_RECT.width, DIVIDE_NUM_X),
                       simplify_pos(self.game_scene.get_nearest_gap_pos()[1], SCR_RECT.height, DIVIDE_NUM_Y)])
 
-        # ジャンプした場合にマイナスの報酬(ジャンプしすぎるので)。
-        # 連続でジャンプした場合に限定(2020/07/26)
-        if action == 1 and self.game_scene.get_rappy_speed() <= -GameScene.PLAYER_SPEED_MAX + 1:
-            #reward += -50.0
-            reward += -1.0
-
-        # 天井に接着しているときマイナスの報酬
-        if self.game_scene.is_rappy_on_top():
-            reward += 0.0
-
-        # スコアを獲得したときの報酬
-        if self.score < self.game_scene.get_score():
-            reward += 3000.0
-            self.score = self.game_scene.get_score()
-        else:
-            reward += 0.0
-
-        # ラッピーのy座標と隙間のy座標が近ければ近いほど報酬が多くもらえる
-        # reward += np.round((DIVIDE_NUM_Y - (abs(self.state[3] - self.state[0]))) / 10, decimals=2)
-        reward += DIVIDE_NUM_Y - (abs(self.state[3] - self.state[0]))
+        reward = self._compute_reward(action)
         
         done = self.game_scene.is_rappy_dead() or self.game_scene.count > 1000
 
@@ -162,3 +142,28 @@ class RappyEnv(gym.Env):
         self.game_scene.render(self.screen)
 
         return
+
+    def _compute_reward(self, action):
+      # 無条件報酬(生存時間あたりの報酬)
+      reward = 5.0 # y座標に比例して増やす報酬を下に追加したため一旦0に変更
+      # ジャンプした場合にマイナスの報酬(ジャンプしすぎるので)。
+      # 連続でジャンプした場合に限定(2020/07/26)
+      if action == 1 and self.game_scene.get_rappy_speed() <= -GameScene.PLAYER_SPEED_MAX + 50:
+          reward += -50.0
+          #reward += -1.0
+
+      # 天井に接着しているときマイナスの報酬
+      if self.game_scene.is_rappy_on_top():
+          reward -= 1.0
+
+      # スコアを獲得したときの報酬
+      if self.score < self.game_scene.get_score():
+          reward += 3000.0
+          self.score = self.game_scene.get_score()
+     
+
+      # ラッピーのy座標と隙間のy座標が近ければ近いほど報酬が多くもらえる
+      # reward += np.round((DIVIDE_NUM_Y - (abs(self.state[3] - self.state[0]))) / 10, decimals=2)
+      reward += DIVIDE_NUM_Y - (abs(self.state[3] - self.state[0]))
+      
+      return reward

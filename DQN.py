@@ -6,6 +6,7 @@ import chainerrl
 import gym
 import myenv
 import time
+import matplotlib.pyplot as plt
 
 # Q値を近似するニューラルネットを定義
 class QFunction(chainer.Chain):
@@ -29,8 +30,8 @@ def main():
   env = gym.make("Rappy-v0")
   obs_size = env.observation_space.shape[0] # プレイヤーと壁の中心との相対ベクトル(x, y)
   n_actions = env.action_space.n # jumpするかしないか
-  # n_nodes = 256 # 中間層のノード数
-  n_nodes = 128 # 中間層のノード数
+  n_nodes = 256 # 中間層のノード数
+  # n_nodes = 128 # 中間層のノード数
   q_func = QFunction(obs_size, n_actions, n_nodes) # Q関数のインスタンスを生成
 
   # パラメータの更新アルゴリズムの設定
@@ -50,10 +51,13 @@ def main():
   # replay_start_size 再生バッファのサイズがこれより小さい場合更新をスキップする。この値になるごとに更新を行う
   # update_interval 更新を行う頻度?
   # target_update_interval 更新をネットワークと同期する頻度?
-  agent = chainerrl.agents.DQN(q_func, optimizer, replay_buffer, gamma, explorer, replay_start_size=1000, minibatch_size=32, update_interval=1, target_update_interval=10, phi=phi)
+  agent = chainerrl.agents.DQN(q_func, optimizer, replay_buffer, gamma, explorer, replay_start_size=1000, minibatch_size=32, update_interval=1, target_update_interval=50, phi=phi)
   # agent.load("agent_20200723")
 
-  n_episodes = 20000 # 学習ゲーム回数
+  n_episodes = 100000 # 学習ゲーム回数
+
+  episode_num = []
+  episode_return = []
 
   for i in range(1, n_episodes + 1):
     reward = 0
@@ -79,10 +83,18 @@ def main():
       t += 1
 
       # print("state:", obs)
+    
+    episode_num.append(i)
+    episode_return.append(R)
+
+    plt.plot(episode_num, episode_return)
+    plt.draw()
+    plt.pause(0.0001)
 
     agent.stop_episode_and_train(obs, reward, done)
     print("episode:" + str(i) + " time:" + str(t) + " reward:" + str(R))
   
+
   agent.save("agent_20200726")
 
 
