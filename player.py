@@ -72,6 +72,9 @@ class Player(pygame.sprite.Sprite):
     def get_pos(self):
         return self.rect.center # (x, y)でrectの中央座標を返す
 
+    def get_size(self):
+        return (self.rect.width, self.rect.height)
+
     def get_speed(self):
         return self.__speed
 
@@ -94,13 +97,14 @@ class Player(pygame.sprite.Sprite):
             else:
                 self.__fallen = True
 
-            if action == 1:
-                self.do_jump()
+            if action != None:
+                if action == 1:
+                    self.do_jump()
 
-            # for e in event:
-            #     # if event.type == KEYDOWN and pressed_key[K_SPACE] == True:
-            #     if e.type == KEYDOWN and e.key == K_SPACE:
-            #         self.do_jump() # SPACEが押されていればジャンプを実行
+            for e in event:
+                # if event.type == KEYDOWN and pressed_key[K_SPACE] == True:
+                if e.type == KEYDOWN and e.key == K_SPACE:
+                    self.do_jump() # SPACEが押されていればジャンプを実行
 
             self.rect.move_ip(0, self.__speed) # y座標を__speed分移動
 

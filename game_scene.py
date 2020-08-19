@@ -10,7 +10,8 @@ from player import Player
 class GameScene():
   
   # WALL_INTERBAL：壁の出現する間隔(フレーム単位)
-  WALL_INTERVAL = 240
+  # WALL_INTERVAL = 240
+  WALL_INTERVAL = 180
 
   # GAP：壁の隙間のサイズ
   GAP = 250
@@ -33,9 +34,9 @@ class GameScene():
     self.exit_flag = False # pygame.quit()後に再度ループに入らないようフラグを用意
     collision.clear_wall_obj()
 
-    random.seed(1) # seed値を固定し、毎回同じステージにする。デバッグ以外では封印推奨。
+    # random.seed(64) # seed値を固定し、毎回同じステージにする。デバッグ以外では封印推奨。
 
-  def step(self, action):
+  def step(self, action=None):
     self.count += 1
     event = pygame.event.get() # 一度pygame.event.get()を行うと中身が消えてしまうため、eventに格納してplayerへ渡している
 
